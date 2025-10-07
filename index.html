@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imagenes</title>
+</head>
+<body>
+  
+  <form id="nombre-form">
+    <label for="nombre">Buscar por nombre:</label>
+    <input id="nombre" type="text" name="nombre" placeholder="Nombre">
+    <button type="submit">Ejecutar</button>
+  </form>
+
+  <img id="preview" alt="Vista previa" style="display:none;max-width:100%;margin-top:1rem;">
+
+  <script>
+    document.getElementById('nombre-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      if (!nombre) return;
+
+      try {
+        const res = await fetch('http://localhost:5000/imagenes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre })
+        });
+
+        const data = await res.json();
+
+        if (data.status === "ok") {
+          const img = document.getElementById('preview');
+          img.src = data.imagen.startsWith("data:") 
+                      ? data.imagen 
+                      : `data:image/png;base64,${data.imagen}`;
+          img.style.display = 'block';
+        } else {
+          alert(data.message || "No se encontró la imagen");
+        }
+      } catch (err) {
+        alert("Error de conexión con el servidor");
+        console.error(err);
+      }
+    });
+  </script>
+  
+</body>
+</html>
